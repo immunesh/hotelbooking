@@ -3,6 +3,7 @@ from django.views.generic import TemplateView
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib import messages
+from .forms import HotelForm
 
 # Home Page View
 class HomePage(TemplateView):
@@ -11,6 +12,19 @@ class HomePage(TemplateView):
 # Account Profile View
 def account_profile(request):
     return render(request, 'account-profile.html')
+
+# Hotel admin View
+def hotel_dashboard(request):
+    if request.method == 'POST':
+        form = HotelForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('hotel-admin')  # redirect to same page or success page
+    else:
+        form = HotelForm()
+
+    return render(request, 'hotel-admin.html', {'form': form})
+
 
 # Signup View
 def signup_view(request):
