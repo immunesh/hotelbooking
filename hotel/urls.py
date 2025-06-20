@@ -26,6 +26,7 @@ urlpatterns = [
     path('', views.HomePage.as_view(), name='home'),
     path('account-profile/', views.account_profile, name='account-profile'),
     path('hotel-admin/', views.hotel_dashboard, name='hotel-admin'),
+    path("forgot-password/", views.forgot_password, name="forgot_password"),
 
     path('signup/', signup_view, name='signup'),
     path('login/', login_view, name='login'), 
