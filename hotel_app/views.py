@@ -174,6 +174,7 @@ def api_find_optimal_rooms(request):
         })
 
 
+@csrf_exempt
 def api_quick_book(request):
     """API endpoint for quick booking (just number of rooms)"""
     if request.method == 'POST':
@@ -206,6 +207,7 @@ def api_quick_book(request):
     return JsonResponse({'success': False, 'message': 'Method not allowed'}, status=405)
 
 
+@csrf_exempt
 def api_reset_all(request):
     """API endpoint to reset all bookings and rooms"""
     if request.method == 'POST':
@@ -225,6 +227,7 @@ def api_reset_all(request):
     return JsonResponse({'success': False, 'message': 'Method not allowed'}, status=405)
 
 
+@csrf_exempt
 def api_random_occupancy(request):
     """API endpoint to generate random room occupancy"""
     if request.method == 'POST':
