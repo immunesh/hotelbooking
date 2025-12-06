@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+
+{% block title %}Room Status - Hotel Room Reservation System{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <h1><i class="bi bi-grid me-3"></i>Room Status</h1>
+        <p class="lead">View all 97 rooms across 10 floors</p>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="container">
+    <div class="row g-4 mb-4">
+        <div class="col-md-3 col-6">
+            <div class="stats-card text-center">
+                <div class="icon bg-primary text-white mx-auto">
+                    <i class="bi bi-door-open"></i>
+                </div>
+                <h3 class="text-primary">{{ stats.total_rooms }}</h3>
+                <p class="text-muted mb-0">Total Rooms</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stats-card text-center">
+                <div class="icon bg-success text-white mx-auto">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <h3 class="text-success">{{ stats.available_rooms }}</h3>
+                <p class="text-muted mb-0">Available</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stats-card text-center">
+                <div class="icon bg-danger text-white mx-auto">
+                    <i class="bi bi-x-circle"></i>
+                </div>
+                <h3 class="text-danger">{{ stats.booked_rooms }}</h3>
+                <p class="text-muted mb-0">Booked</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stats-card text-center">
+                <div class="icon bg-warning text-white mx-auto">
+                    <i class="bi bi-percent"></i>
+                </div>
+                <h3 class="text-warning">{{ stats.occupancy_rate }}%</h3>
+                <p class="text-muted mb-0">Occupancy</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Room Grid Section -->
+<section class="container">
+    <div class="card-custom p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <h4 class="mb-0"><i class="bi bi-building me-2"></i>Floor-wise Room Layout</h4>
+            <form method="post" action="{% url 'initialize_rooms' %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-secondary" onclick="return confirm('This will reset all rooms and cancel all bookings. Are you sure?')">
+                    <i class="bi bi-arrow-clockwise me-2"></i>Reset All Rooms
+                </button>
+            </form>
+        </div>
+        
+        <!-- Legend -->
+        <div class="d-flex justify-content-center gap-4 mb-4 flex-wrap">
+            <div class="d-flex align-items-center gap-2">
+                <div class="room-box room-available" style="width: 30px; height: 30px; font-size: 0;"></div>
+                <span>Available</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <div class="room-box room-booked" style="width: 30px; height: 30px; font-size: 0;"></div>
+                <span>Booked</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <div class="stairs-lift" style="padding: 5px 10px;">
+                    <i class="bi bi-ladder"></i>
+                </div>
+                <span>Stairs/Lift (Left Side)</span>
+            </div>
+        </div>
+
+        <!-- Building Info -->
+        <div class="alert alert-secondary mb-4">
+            <div class="row text-center">
+                <div class="col-md-4">
+                    <strong>Floors 1-9:</strong> 10 rooms each (101-110, 201-210, ... 901-910)
+                </div>
+                <div class="col-md-4">
+                    <strong>Floor 10:</strong> 7 rooms (1001-1007)
+                </div>
+                <div class="col-md-4">
+                    <strong>Total:</strong> 97 rooms
+                </div>
+            </div>
+        </div>
+        
+        <!-- Floors Display (from top floor to bottom) -->
+        {% for floor, rooms in room_status.items reversed %}
+        <div class="mb-4 p-3" style="background: #f8f9fa; border-radius: 10px;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stairs-lift">
+                    <i class="bi bi-ladder"></i><br>
+                    <small>Stairs<br>/Lift</small>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="floor-label">Floor {{ floor }}</span>
+                        <small class="text-muted">
+                            {% with available_count=0 %}
+                            {% for room in rooms %}
+                                {% if room.is_available %}
+                                    {% with ''|center:1 as x %}{% endwith %}
+                                {% endif %}
+                            {% endfor %}
+                            {% endwith %}
+                            {{ rooms|length }} rooms
+                        </small>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for room in rooms %}
+                        <div class="room-box {% if room.is_available %}room-available{% else %}room-booked{% endif %}" 
+                             title="Room {{ room.room_number }} - {% if room.is_available %}Available{% else %}Booked{% endif %}">
+                            {{ room.room_number }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-5">
+            <i class="bi bi-exclamation-circle fs-1 text-muted"></i>
+            <p class="text-muted mt-3">No rooms found. Initialize rooms to get started.</p>
+            <form method="post" action="{% url 'initialize_rooms' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary-custom">
+                    <i class="bi bi-plus-circle me-2"></i>Initialize 97 Rooms
+                </button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Action Buttons -->
+<section class="container mt-4">
+    <div class="d-flex justify-content-center gap-3">
+        <a href="{% url 'book_room' %}" class="btn btn-success-custom btn-lg">
+            <i class="bi bi-calendar-plus me-2"></i>Book Rooms
+        </a>
+        <a href="{% url 'all_bookings' %}" class="btn btn-primary-custom btn-lg">
+            <i class="bi bi-list-check me-2"></i>View All Bookings
+        </a>
+    </div>
+</section>
+{% endblock %}
