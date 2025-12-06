@@ -1,26 +1,19 @@
 from django.contrib import admin
-from .models import Hotel, CustomUser
-from django.contrib.auth.admin import UserAdmin
+from .models import Room, Booking
 
 
-class CustomUserAdmin(UserAdmin):
-    model = CustomUser
-    list_display = ('email', 'phone_number', 'is_staff', 'is_superuser')
-    list_filter = ('is_staff', 'is_superuser')
-    search_fields = ('email', 'phone_number')
-    ordering = ('email',)
+@admin.register(Room)
+class RoomAdmin(admin.ModelAdmin):
+    list_display = ('room_number', 'floor', 'is_available')
+    list_filter = ('floor', 'is_available')
+    search_fields = ('room_number',)
+    ordering = ('floor', 'room_number')
 
-    fieldsets = (
-        (None, {'fields': ('email', 'phone_number', 'password')}),
-        ('Permissions', {'fields': ('is_staff', 'is_active', 'is_superuser', 'groups', 'user_permissions')}),
-    )
 
-    add_fieldsets = (
-        (None, {
-            'classes': ('wide',),
-            'fields': ('email', 'phone_number', 'password1', 'password2', 'is_staff', 'is_active')}
-         ),
-    )
-
-admin.site.register(CustomUser, CustomUserAdmin)
-admin.site.register(Hotel)
+@admin.register(Booking)
+class BookingAdmin(admin.ModelAdmin):
+    list_display = ('booking_id', 'guest_name', 'guest_email', 'guest_phone', 'total_travel_time', 'created_at')
+    list_filter = ('created_at',)
+    search_fields = ('guest_name', 'guest_email', 'guest_phone')
+    ordering = ('-created_at',)
+    filter_horizontal = ('rooms',)

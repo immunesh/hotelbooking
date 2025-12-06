@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block title %}All Bookings - Hotel Room Reservation System{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <h1><i class="bi bi-list-check me-3"></i>All Bookings</h1>
+        <p class="lead">Manage and view all room reservations</p>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="container">
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="stats-card text-center">
+                <div class="icon bg-primary text-white mx-auto">
+                    <i class="bi bi-bookmark-check"></i>
+                </div>
+                <h3 class="text-primary">{{ stats.total_bookings }}</h3>
+                <p class="text-muted mb-0">Total Bookings</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stats-card text-center">
+                <div class="icon bg-success text-white mx-auto">
+                    <i class="bi bi-door-open"></i>
+                </div>
+                <h3 class="text-success">{{ stats.available_rooms }}</h3>
+                <p class="text-muted mb-0">Available Rooms</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stats-card text-center">
+                <div class="icon bg-danger text-white mx-auto">
+                    <i class="bi bi-door-closed"></i>
+                </div>
+                <h3 class="text-danger">{{ stats.booked_rooms }}</h3>
+                <p class="text-muted mb-0">Booked Rooms</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Bookings Table -->
+<section class="container">
+    <div class="card-custom p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <h4 class="mb-0"><i class="bi bi-table me-2"></i>Booking Records</h4>
+            <a href="{% url 'book_room' %}" class="btn btn-success-custom">
+                <i class="bi bi-plus-circle me-2"></i>New Booking
+            </a>
+        </div>
+        
+        {% if bookings %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Booking ID</th>
+                        <th>Guest Name</th>
+                        <th>Contact</th>
+                        <th>Rooms</th>
+                        <th>Travel Time</th>
+                        <th>Booked On</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in bookings %}
+                    <tr>
+                        <td>
+                            <span class="badge bg-primary">#{{ booking.booking_id }}</span>
+                        </td>
+                        <td>
+                            <strong>{{ booking.guest_name }}</strong>
+                        </td>
+                        <td>
+                            <small>
+                                <i class="bi bi-envelope me-1"></i>{{ booking.guest_email }}<br>
+                                <i class="bi bi-telephone me-1"></i>{{ booking.guest_phone }}
+                            </small>
+                        </td>
+                        <td>
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for room in booking.rooms.all %}
+                                <span class="badge bg-secondary">{{ room.room_number }}</span>
+                                {% endfor %}
+                            </div>
+                            <small class="text-muted">{{ booking.rooms.count }} room{% if booking.rooms.count != 1 %}s{% endif %}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-info">{{ booking.total_travel_time }} min</span>
+                        </td>
+                        <td>
+                            <small>{{ booking.created_at|date:"M d, Y" }}<br>{{ booking.created_at|time:"h:i A" }}</small>
+                        </td>
+                        <td>
+                            <form method="POST" action="{% url 'cancel_booking' booking.booking_id %}" 
+                                  onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger-custom btn-sm">
+                                    <i class="bi bi-x-circle me-1"></i>Cancel
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-inbox fs-1 text-muted"></i>
+            <p class="text-muted mt-3">No bookings yet. Make your first reservation!</p>
+            <a href="{% url 'book_room' %}" class="btn btn-success-custom">
+                <i class="bi bi-calendar-plus me-2"></i>Book Rooms Now
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Quick Actions -->
+<section class="container mt-4">
+    <div class="d-flex justify-content-center gap-3">
+        <a href="{% url 'room_status' %}" class="btn btn-primary-custom">
+            <i class="bi bi-grid me-2"></i>View Room Status
+        </a>
+        <a href="{% url 'home' %}" class="btn btn-outline-light" style="border-radius: 25px; padding: 12px 30px;">
+            <i class="bi bi-house me-2"></i>Back to Home
+        </a>
+    </div>
+</section>
+{% endblock %}

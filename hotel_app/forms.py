@@ -1,33 +1,33 @@
 from django import forms
-from .models import Hotel
-from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser
+from .models import Booking
 
-# signup form
-class CustomSignupForm(UserCreationForm):
-    email = forms.EmailField(required=True)
-    phone_number = forms.CharField(max_length=15)
 
-    class Meta:
-        model = CustomUser
-        fields = ['email', 'phone_number', 'password1', 'password2']
-
-# login form
-class CustomLoginForm(forms.Form):
-    identifier = forms.CharField(label="Email or Phone")
-    password = forms.CharField(widget=forms.PasswordInput)
-
-# hotel admin deshboard
-class HotelForm(forms.ModelForm):
-    class Meta:
-        model = Hotel
-        fields = ['image', 'name', 'email', 'phone', 'country', 'address']
-        widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter your Hotel name'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Enter your email id'}),
-            'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter your phone number'}),
-            'country': forms.Select(attrs={'class': 'form-select'}, choices=[('USA', 'USA'), ('Paris', 'Paris'), ('India', 'India'), ('UK', 'UK')]),
-            'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Enter your Address'}),
-
-        }
+class BookingForm(forms.Form):
+    """Form for booking rooms"""
+    guest_name = forms.CharField(
+        max_length=100,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter your full name'
+        })
+    )
+    guest_email = forms.EmailField(
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter your email'
+        })
+    )
+    guest_phone = forms.CharField(
+        max_length=15,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter your phone number'
+        })
+    )
+    num_rooms = forms.ChoiceField(
+        choices=[(i, f'{i} Room{"s" if i > 1 else ""}') for i in range(1, 6)],
+        widget=forms.Select(attrs={
+            'class': 'form-select'
+        })
+    )
 

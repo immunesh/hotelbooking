@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block title %}Book Rooms - Hotel Room Reservation System{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <h1><i class="bi bi-calendar-plus me-3"></i>Book Rooms</h1>
+        <p class="lead">Book up to 5 rooms with optimized travel time</p>
+    </div>
+</section>
+
+<!-- Booking Form Section -->
+<section class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card-custom p-4 p-md-5">
+                <!-- Stats Summary -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="text-center p-3" style="background: #e8f5e9; border-radius: 10px;">
+                            <h4 class="text-success mb-0">{{ stats.available_rooms }}</h4>
+                            <small class="text-muted">Rooms Available</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center p-3" style="background: #ffebee; border-radius: 10px;">
+                            <h4 class="text-danger mb-0">{{ stats.booked_rooms }}</h4>
+                            <small class="text-muted">Rooms Booked</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center p-3" style="background: #e3f2fd; border-radius: 10px;">
+                            <h4 class="text-primary mb-0">{{ max_rooms }}</h4>
+                            <small class="text-muted">Max Rooms/Booking</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booking Rules -->
+                <div class="alert alert-info mb-4">
+                    <h6 class="alert-heading"><i class="bi bi-info-circle me-2"></i>Booking Rules</h6>
+                    <ul class="mb-0 small">
+                        <li>Maximum 5 rooms can be booked at a time</li>
+                        <li>Rooms are assigned to minimize travel time</li>
+                        <li>Priority: Same floor first, then adjacent floors</li>
+                        <li>Travel time: 1 min/room (horizontal), 2 min/floor (vertical)</li>
+                    </ul>
+                </div>
+
+                <!-- Booking Form -->
+                <form method="POST" action="{% url 'book_room' %}" id="bookingForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label for="guest_name" class="form-label fw-bold">
+                            <i class="bi bi-person me-2"></i>Guest Name *
+                        </label>
+                        <input type="text" class="form-control" id="guest_name" name="guest_name" 
+                               placeholder="Enter full name" required>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label for="guest_email" class="form-label fw-bold">
+                                <i class="bi bi-envelope me-2"></i>Email Address *
+                            </label>
+                            <input type="email" class="form-control" id="guest_email" name="guest_email" 
+                                   placeholder="Enter email" required>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <label for="guest_phone" class="form-label fw-bold">
+                                <i class="bi bi-telephone me-2"></i>Phone Number *
+                            </label>
+                            <input type="tel" class="form-control" id="guest_phone" name="guest_phone" 
+                                   placeholder="Enter phone number" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="num_rooms" class="form-label fw-bold">
+                            <i class="bi bi-door-open me-2"></i>Number of Rooms *
+                        </label>
+                        <select class="form-select" id="num_rooms" name="num_rooms" required>
+                            <option value="">Select number of rooms</option>
+                            {% for i in "12345" %}
+                            <option value="{{ i }}">{{ i }} Room{% if i != "1" %}s{% endif %}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Room Preview -->
+                    <div id="roomPreview" class="mb-4" style="display: none;">
+                        <div class="alert alert-success">
+                            <h6 class="alert-heading"><i class="bi bi-check-circle me-2"></i>Optimal Rooms Found</h6>
+                            <p class="mb-1">Rooms: <strong id="previewRooms"></strong></p>
+                            <p class="mb-0">Estimated Travel Time: <strong id="previewTime"></strong> minutes</p>
+                        </div>
+                    </div>
+                    
+                    <div id="noRoomsAlert" class="mb-4" style="display: none;">
+                        <div class="alert alert-danger">
+                            <h6 class="alert-heading"><i class="bi bi-exclamation-circle me-2"></i>Not Enough Rooms</h6>
+                            <p class="mb-0" id="noRoomsMessage"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-outline-primary" id="previewBtn" onclick="previewRooms()">
+                            <i class="bi bi-search me-2"></i>Preview Available Rooms
+                        </button>
+                        <button type="submit" class="btn btn-success-custom btn-lg">
+                            <i class="bi bi-check2-circle me-2"></i>Confirm Booking
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function previewRooms() {
+        const numRooms = document.getElementById('num_rooms').value;
+        const previewDiv = document.getElementById('roomPreview');
+        const noRoomsDiv = document.getElementById('noRoomsAlert');
+        
+        if (!numRooms) {
+            alert('Please select number of rooms first');
+            return;
+        }
+        
+        fetch(`/api/find-rooms/?num_rooms=${numRooms}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const roomNumbers = data.rooms.map(r => r.room_number).join(', ');
+                    document.getElementById('previewRooms').textContent = roomNumbers;
+                    document.getElementById('previewTime').textContent = data.travel_time;
+                    previewDiv.style.display = 'block';
+                    noRoomsDiv.style.display = 'none';
+                } else {
+                    document.getElementById('noRoomsMessage').textContent = data.message;
+                    noRoomsDiv.style.display = 'block';
+                    previewDiv.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error checking room availability');
+            });
+    }
+    
+    // Auto-preview when room selection changes
+    document.getElementById('num_rooms').addEventListener('change', function() {
+        if (this.value) {
+            previewRooms();
+        }
+    });
+</script>
+{% endblock %}

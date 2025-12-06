@@ -1,36 +1,31 @@
 """
 URL configuration for hotel project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.0/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
+Hotel Room Reservation System
 """
 from django.contrib import admin
 from django.urls import path
 from hotel_app import views
-from hotel_app.views import login_view, signup_view, logout_view
 from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.HomePage.as_view(), name='home'),
-    path('account-profile/', views.account_profile, name='account-profile'),
-    path('hotel-admin/', views.hotel_dashboard, name='hotel-admin'),
-    path("forgot-password/", views.forgot_password, name="forgot_password"),
-
-    path('signup/', signup_view, name='signup'),
-    path('login/', login_view, name='login'), 
-    path('logout/', logout_view, name='logout')
+    
+    # Main pages
+    path('', views.home, name='home'),
+    path('book/', views.book_room, name='book_room'),
+    path('booking/<int:booking_id>/', views.booking_confirmation, name='booking_confirmation'),
+    path('rooms/', views.room_status, name='room_status'),
+    path('bookings/', views.all_bookings, name='all_bookings'),
+    path('cancel/<int:booking_id>/', views.cancel_booking, name='cancel_booking'),
+    path('initialize/', views.initialize_rooms, name='initialize_rooms'),
+    
+    # API endpoints
+    path('api/room-status/', views.api_get_room_status, name='api_room_status'),
+    path('api/find-rooms/', views.api_find_optimal_rooms, name='api_find_rooms'),
+    path('api/quick-book/', views.api_quick_book, name='api_quick_book'),
+    path('api/reset-all/', views.api_reset_all, name='api_reset_all'),
+    path('api/random-occupancy/', views.api_random_occupancy, name='api_random_occupancy'),
 ]
 
 if settings.DEBUG:
